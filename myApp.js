@@ -101,10 +101,39 @@ app.route('/name').post(function(req,res){
 
 // Timestamp microservice
 //todo
+app.route('/api/timestamp/:date_string?').get(function(req,res,next){
+  //always call next for middleware
+  const dtNum = parseInt(req.params.date_string*1000); 
+  const dt = new Date(dtNum);
+  if(dt.toString()==="Invalid Date") {
+    const strDate = new Date(req.params.date_string);
+    if(strDate.toString()==="Invalid Date") {
+      res.data = {"error":strDate}  
+    } else {
+      res.data = {"unix":strDate.getTime(),"utc":strDate.toUTCString()}
+    }
+    
+  } else {
+    res.data = {"unix":dt.getTime(),"utc":dt.toUTCString()}
+  }
+  
+  next();
+},function(req,res){
+  res.json(res.data);
+});
+
 
 //request head parser
-app.route('/api/whoami').get(function(req,res){
-  res.json({"ipaddress":req.ip,"language":req.headers['accept-language'],"software":req.headers['user-agent']});
+app.route('/api/whoami')
+.get(function(req,res,next){
+  const json = {};
+  json.ip = req.ip;
+  json.lang = req.headers['accept-language'];
+  json.software = req.headers['user-agent'];
+  res.resjs = json;
+  next();
+},function(req,res){
+  res.json(res.resjs);
 });
 
 
